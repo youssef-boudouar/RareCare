@@ -12,23 +12,27 @@ class PatientController extends Controller
      */
     public function index()
     {
-        //
+        $patients = Patient::paginate(10);
+
+        return response()->json($patients);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:50',
+            'gender' => 'required|in:male,female',
+            'diagnosis' => 'required|string',
+            'symptoms' => 'required|string',
+        ]);
+
+        $patient = Patient::create($validated);
+
+        return response()->json($patient);
     }
 
     /**
@@ -36,23 +40,25 @@ class PatientController extends Controller
      */
     public function show(Patient $patient)
     {
-        //
+        return response()->json($patient);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Patient $patient)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Patient $patient)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:50',
+            'gender' => 'required|in:male,female',
+            'diagnosis' => 'required|string',
+            'symptoms' => 'required|string',
+        ]);
+
+        $patient->update($validated);
+
+        return response()->json($patient);
     }
 
     /**
@@ -60,6 +66,7 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient)
     {
-        //
+        $patient->delete();
+        return response()->json(['message' => 'Patient deleted successfully']);
     }
 }
