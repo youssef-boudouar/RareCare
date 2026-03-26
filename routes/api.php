@@ -1,13 +1,33 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PatientController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Public routes
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
-Route::apiResource('patients', PatientController::class);
-Route::post('chat', [ChatController::class, 'chat']);
+// Protected routes
+Route::middleware('auth:api')->group(function () {
+    Route::get('profile', [AuthController::class, 'profile']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('chat', [ChatController::class, 'chat']);
+
+    // Admin only: delete
+    Route::middleware('role:admin')->group(function () {
+        Route::delete('patients/{patient}', [PatientController::class, 'destroy']);
+    });
+
+    // Admin + Doctor: create and update
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::post('patients', [PatientController::class, 'store']);
+        Route::put('patients/{patient}', [PatientController::class, 'update']);
+    });
+
+    // All authenticated users: read
+    Route::get('patients', [PatientController::class, 'index']);
+    Route::get('patients/{patient}', [PatientController::class, 'show']);
+});
