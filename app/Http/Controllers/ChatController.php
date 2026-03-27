@@ -21,7 +21,7 @@ class ChatController extends Controller
                Answer this question: {$request->message}";
 
         $response = Http::post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . env('GEMINI_API_KEY'),
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . config('services.gemini.api_key'),
             [
                 'contents' => [
                     [
@@ -32,6 +32,10 @@ class ChatController extends Controller
                 ]
             ]
         );
+
+        if ($response->failed()) {
+            return response()->json(['message' => 'AI service unavailable'], 503);
+        }
 
         $result = $response->json();
         $answer = $result['candidates'][0]['content']['parts'][0]['text'];
